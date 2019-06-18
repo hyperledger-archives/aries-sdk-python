@@ -1,4 +1,4 @@
-# indy-sdk-python
+# aries-sdk-python
 
 This is the library that allows use of aries-sdk with python.
 
