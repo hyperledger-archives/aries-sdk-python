@@ -3,10 +3,6 @@ from typing import Dict, Optional
 import json
 
 
-async def test_method(arg1, arg2):
-    return None
-
-
 async def create_wallet(config: Dict,
                         credentials: Dict) -> None:
     return await wallet.create_wallet(json.dumps(config), json.dumps(credentials))
