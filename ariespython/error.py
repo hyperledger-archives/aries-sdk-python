@@ -48,7 +48,7 @@ def errorcode_to_exception(errorcode):
         703: PaymentSourceDoesNotExistError,
         704: PaymentOperationNotSupportedError,
         705: PaymentExtraFundsError
-    }[errorcode]
+    }[errorcode]()
 
 
 class CommonInvalidParam1(Exception):
