@@ -4,8 +4,9 @@ import json
 from indy import did, non_secrets, error
 from .error import errorcode_to_exception
 
+
 async def create_and_store_my_did(wallet_handle: int,
-                                  did_dict: Dict[str, Any]) -> (str, str):
+                                  did_dict: Dict[str, Any] = {}) -> (str, str):
     try:
         (my_did, my_vk) = await did.create_and_store_my_did(
             wallet_handle,
