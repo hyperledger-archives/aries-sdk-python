@@ -7,7 +7,7 @@ from .error import errorcode_to_exception
 async def pack_message(wallet_handle: int,
                        message: str,
                        recipient_verkeys: list,
-                       sender_verkey: Optional[str]) -> bytes:
+                       sender_verkey: Optional[str] = None) -> bytes:
     try:
         return await crypto.pack_message(
             wallet_handle,
