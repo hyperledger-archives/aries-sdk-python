@@ -20,8 +20,13 @@ async def pack_message(wallet_handle: int,
 
 
 async def unpack_message(wallet_handle: int,
-                         jwe: bytes) -> bytes:
+                         jwe: bytes) -> (str, str, str):
     try:
-        return await crypto.unpack_message(wallet_handle, jwe)
+        unpacked = json.loads(await crypto.unpack_message(wallet_handle, jwe))
+        return (
+            unpacked['message'],
+            unpacked['recipient_verkey'],
+            unpacked.get('sender_verkey', None)
+        )
     except error.IndyError as err:
         raise errorcode_to_exception(err.error_code) from err
