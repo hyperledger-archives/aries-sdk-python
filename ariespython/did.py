@@ -12,15 +12,6 @@ async def create_and_store_my_did(wallet_handle: int,
             wallet_handle,
             json.dumps(did_dict)
         )
-
-        await non_secrets.add_wallet_record(
-            wallet_handle,
-            'key-to-did',
-            my_vk,
-            my_did,
-            '{}'
-        )
-
         return my_did, my_vk
     except error.IndyError as err:
         raise errorcode_to_exception(err.error_code) from err
@@ -32,13 +23,6 @@ async def store_their_did(wallet_handle: int,
         await did.store_their_did(
             wallet_handle,
             json.dumps(identity_dict)
-        )
-        await non_secrets.add_wallet_record(
-            wallet_handle,
-            'key-to-did',
-            identity_dict['verkey'],
-            identity_dict['did'],
-            '{}'
         )
     except error.IndyError as err:
         raise errorcode_to_exception(err.error_code) from err
@@ -100,18 +84,33 @@ async def set_did_metadata(wallet_handle: int,
 
 
 
+async def key_for_local_did(wallet_handle: int,
+                            did: str) -> str:
+    try:
+        return await did.key_for_local_did(wallet_handle, did)
+    except error.IndyError as err:
+        raise errorcode_to_exception(err.error_code) from err
+
+
 async def did_for_key(wallet_handle: int,
                       verkey: str) -> str:
     try:
-        found_did = json.loads(
-            await non_secrets.get_wallet_record(
-                wallet_handle,
-                'key-to-did',
-                verkey,
-                '{}'
-            )
-        )['value']
+        key_meta = await get_key_metadata(wallet_handle, verkey)
+        if 'did' not in key_meta:
+            return None
+        return key_meta['did']
+    except error.IndyError as err:
+        raise errorcode_to_exception(err.error_code) from err
 
-        return found_did
+
+async def map_key_to_did(wallet_handle: int,
+                         verkey: str,
+                         did:str):
+    try:
+        await set_key_metadata(
+            wallet_handle,
+            verkey,
+            {'did': did}
+        )
     except error.IndyError as err:
         raise errorcode_to_exception(err.error_code) from err
