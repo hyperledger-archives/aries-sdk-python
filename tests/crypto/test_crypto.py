@@ -1,17 +1,15 @@
-from unittest import mock
 import json
 
 import pytest
 
-from tests import AsyncMock
+from tests import async_mock
 from ariespython import crypto
 
 
 @pytest.mark.asyncio
 async def test_pack_message():
-    with mock.patch(
-            'indy.crypto.pack_message',
-            new_callable=AsyncMock
+    with async_mock(
+            'indy.crypto.pack_message'
     ) as method:
         await crypto.pack_message(1, 'test', [])
         method.assert_called_once_with(1, 'test', [], None)
@@ -19,9 +17,8 @@ async def test_pack_message():
 
 @pytest.mark.asyncio
 async def test_unpack_message():
-    with mock.patch(
-            'indy.crypto.unpack_message',
-            new_callable=AsyncMock
+    with async_mock(
+            'indy.crypto.unpack_message'
     ) as method:
         method.return_value = json.dumps({
             'message': 'message',
