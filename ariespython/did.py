@@ -8,11 +8,10 @@ from .error import errorcode_to_exception
 async def create_and_store_my_did(wallet_handle: int,
                                   did_dict: Dict[str, Any] = {}) -> (str, str):
     try:
-        (my_did, my_vk) = await did.create_and_store_my_did(
+        return await did.create_and_store_my_did(
             wallet_handle,
             json.dumps(did_dict)
         )
-        return my_did, my_vk
     except error.IndyError as err:
         raise errorcode_to_exception(err.error_code) from err
 

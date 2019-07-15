@@ -1,12 +1,8 @@
-from unittest import TestCase, mock
+from unittest import mock
 import pytest
 
+from tests import AsyncMock
 from ariespython import wallet
-
-
-class AsyncMock(mock.MagicMock):
-    async def __call__(self, *args, **kwargs):
-        return super(AsyncMock, self).__call__(*args, **kwargs)
 
 
 @pytest.mark.asyncio
