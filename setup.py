@@ -15,7 +15,7 @@ if __name__ == '__main__':
 
     setup(
         name='aries-sdk-python',
-        version='0.2.1',
+        version='0.2.2',
         author='Sam Curren <sam@sovrin.org>, '
         'Andrew Whitehead <cywolf@gmail.com>, '
         'Daniel Bluhm <daniel.bluhm@sovrin.org>',
