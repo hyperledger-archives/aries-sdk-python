@@ -100,6 +100,9 @@ async def did_for_key(wallet_handle: int,
             return None
         return key_meta['did']
     except error.IndyError as err:
+        if err.error_code == error.ErrorCode.WalletItemNotFound:
+            return None
+
         raise errorcode_to_exception(err.error_code) from err
 
 
