@@ -30,3 +30,20 @@ async def unpack_message(wallet_handle: int,
         )
     except error.IndyError as err:
         raise errorcode_to_exception(err.error_code) from err
+
+
+async def crypto_sign(wallet_handle: int,
+                      signer_vk: str,
+                      msg: bytes) -> bytes:
+    try:
+        return await crypto.crypto_sign(wallet_handle, signer_vk, msg)
+    except error.IndyError as err:
+        raise errorcode_to_exception(err.errorcode_to_exception) from err
+
+async def crypto_verify(signer_vk: str,
+                        msg: bytes,
+                        signature: bytes) -> bool:
+    try:
+        return await crypto.crypto_verify(signer_vk, msg, signature)
+    except error.IndyError as err:
+        raise errorcode_to_exception(err.errorcode_to_exception) from err
