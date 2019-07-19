@@ -16,6 +16,18 @@ async def create_and_store_my_did(wallet_handle: int,
         raise errorcode_to_exception(err.error_code) from err
 
 
+async def create_key(wallet_handle: int,
+                     key_dict: Dict[str, Any]) -> str:
+    try:
+        return await did.create_key(
+            wallet_handle,
+            json.dumps(key_dict)
+        )
+    except error.IndyError as err:
+        raise errorcode_to_exception(err.error_code) from err
+
+
+
 async def store_their_did(wallet_handle: int,
                           identity_dict: Dict[str, Any]) -> None:
     try:

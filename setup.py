@@ -15,7 +15,7 @@ if __name__ == '__main__':
 
     setup(
         name='aries-sdk-python',
-        version='0.2.0',
+        version='0.2.4',
         author='Sam Curren <sam@sovrin.org>, '
         'Andrew Whitehead <cywolf@gmail.com>, '
         'Daniel Bluhm <daniel.bluhm@sovrin.org>',
@@ -26,6 +26,10 @@ if __name__ == '__main__':
         license='Apache 2.0',
         packages=find_packages(),
         install_requires=parse_requirements('requirements.txt'),
+        test_requires=['flake8', 'pytest'],
+        extra_requires={
+            'test': ['flake8', 'pytest']
+        },
         python_requires='>=3.6',
         classifiers=[
             'Programming Language :: Python :: 3',

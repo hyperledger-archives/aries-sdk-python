@@ -10,6 +10,7 @@ from ariespython import did
     'mocked_method, method_to_test, before_dict, after_dict',
     [
         ('indy.did.create_and_store_my_did', did.create_and_store_my_did, [], []),
+        ('indy.did.create_key', did.create_key, [], []),
         ('indy.did.store_their_did', did.store_their_did, [], []),
         ('indy.did.set_key_metadata', did.set_key_metadata, ['vk'], []),
         ('indy.did.set_did_metadata', did.set_did_metadata, ['did'], [])
