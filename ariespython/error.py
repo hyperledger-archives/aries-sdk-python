@@ -1,8 +1,16 @@
 """ Aries Errors """
 
+from functools import wraps
 
-def errorcode_to_exception(errorcode):
+from indy.error import IndyError
+
+
+def errorcode_to_exception(errorcode: int, message: str = None):
     """ Map error code to an Exception """
+    if message:
+        args = (message,)
+    else:
+        args = ()
     return {
         100: CommonInvalidParam1,
         101: CommonInvalidParam2,
@@ -47,206 +55,235 @@ def errorcode_to_exception(errorcode):
         702: PaymentInsufficientFundsError,
         703: PaymentSourceDoesNotExistError,
         704: PaymentOperationNotSupportedError,
-        705: PaymentExtraFundsError
-    }[errorcode]()
+        705: PaymentExtraFundsError,
+    }[errorcode](*args)
 
 
-class CommonInvalidParam1(Exception):
+class IndyErrorHandler:
+    """Error handler for mapping Indy errors."""
+
+    def __enter__(self):
+        """Enter the context manager."""
+        return self
+
+    def __exit__(self, err_type, err_value, err_traceback):
+        """Exit the context manager."""
+        if err_type is IndyError:
+            msg = hasattr(err_value, "message") and err_value.message or None
+            raise errorcode_to_exception(err_value.error_code, msg)
+
+    def __call__(self, coro):
+        """Perform as a decorator."""
+
+        @wraps(coro)
+        async def wrapped(*args, **kwargs):
+            with self:
+                return await coro(*args, **kwargs)
+
+        return wrapped
+
+
+class AriesError(Exception):
+    """Base class for Aries exceptions."""
+
+
+class CommonInvalidParam1(AriesError):
     """Caller passed invalid value as param 1 (null, invalid json and etc..)
     """
 
 
-class CommonInvalidParam2(Exception):
+class CommonInvalidParam2(AriesError):
     """Caller passed invalid value as param 2 (null, invalid json and etc..)
     """
 
 
-class CommonInvalidParam3(Exception):
+class CommonInvalidParam3(AriesError):
     """ Caller passed invalid value as param 3 (null, invalid json and etc..)
     """
 
 
-class CommonInvalidParam4(Exception):
+class CommonInvalidParam4(AriesError):
     """ Caller passed invalid value as param 4 (null, invalid json and etc..)
     """
 
 
-class CommonInvalidParam5(Exception):
+class CommonInvalidParam5(AriesError):
     """ Caller passed invalid value as param 5 (null, invalid json and etc..)
     """
 
 
-class CommonInvalidParam6(Exception):
+class CommonInvalidParam6(AriesError):
     """ Caller passed invalid value as param 6 (null, invalid json and etc..)
     """
 
 
-class CommonInvalidParam7(Exception):
+class CommonInvalidParam7(AriesError):
     """ Caller passed invalid value as param 7 (null, invalid json and etc..)
     """
 
 
-class CommonInvalidParam8(Exception):
+class CommonInvalidParam8(AriesError):
     """ Caller passed invalid value as param 8 (null, invalid json and etc..)
     """
 
 
-class CommonInvalidParam9(Exception):
+class CommonInvalidParam9(AriesError):
     """ Caller passed invalid value as param 9 (null, invalid json and etc..)
     """
 
 
-class CommonInvalidParam10(Exception):
+class CommonInvalidParam10(AriesError):
     """ Caller passed invalid value as param 10 (null, invalid json and etc..)
     """
 
 
-class CommonInvalidParam11(Exception):
+class CommonInvalidParam11(AriesError):
     """ Caller passed invalid value as param 11 (null, invalid json and etc..)
     """
 
 
-class CommonInvalidParam12(Exception):
+class CommonInvalidParam12(AriesError):
     """ Caller passed invalid value as param 12 (null, invalid json and etc..)
     """
 
 
-class CommonInvalidState(Exception):
+class CommonInvalidState(AriesError):
     """ Invalid library state was detected in runtime. It signals library bug.
     """
 
 
-class CommonInvalidStructure(Exception):
+class CommonInvalidStructure(AriesError):
     """ Object (json, config, key, credential and etc...) passed by library
         caller has invalid structure
     """
 
 
-class CommonIOError(Exception):
+class CommonIOError(AriesError):
     """ IO Error """
 
 
 # Wallet errors
 
-class WalletInvalidHandle(Exception):
+
+class WalletInvalidHandle(AriesError):
     """ Caller passed invalid wallet handle """
 
 
-class WalletUnknownTypeError(Exception):
+class WalletUnknownTypeError(AriesError):
     """ Unknown type of wallet was passed on create_wallet """
 
 
-class WalletTypeAlreadyRegisteredError(Exception):
+class WalletTypeAlreadyRegisteredError(AriesError):
     """ Attempt to register already existing wallet type """
 
 
-class WalletAlreadyExistsError(Exception):
+class WalletAlreadyExistsError(AriesError):
     """ Attempt to create wallet with name used for another exists wallet """
 
 
-class WalletNotFoundError(Exception):
+class WalletNotFoundError(AriesError):
     """ Requested entity id isn't present in wallet """
 
 
-class WalletIncompatiblePoolError(Exception):
+class WalletIncompatiblePoolError(AriesError):
     """ Trying to use wallet with pool that has different name """
 
 
-class WalletAlreadyOpenedError(Exception):
+class WalletAlreadyOpenedError(AriesError):
     """ Trying to open wallet that was opened already """
 
 
-class WalletAccessFailed(Exception):
+class WalletAccessFailed(AriesError):
     """ Input provided to wallet operations is considered not valid """
 
 
-class WalletInputError(Exception):
+class WalletInputError(AriesError):
     """ Attempt to open encrypted wallet with invalid credentials """
 
 
-class WalletDecodingError(Exception):
+class WalletDecodingError(AriesError):
     """ Decoding of wallet data during input/output failed """
 
 
-class WalletStorageError(Exception):
+class WalletStorageError(AriesError):
     """ Storage error occurred during wallet operation """
 
 
-class WalletEncryptionError(Exception):
+class WalletEncryptionError(AriesError):
     """ Error during encryption-related operations """
 
 
-class WalletItemNotFound(Exception):
+class WalletItemNotFound(AriesError):
     """ Requested wallet item not found """
 
 
-class WalletItemAlreadyExists(Exception):
+class WalletItemAlreadyExists(AriesError):
     """ Returned if wallet's add_record operation is used with record name
-        that already exists 
+        that already exists
     """
 
 
-class WalletQueryError(Exception):
+class WalletQueryError(AriesError):
     """ Returned if provided wallet query is invalid """
 
 
-class AnoncredsRevocationRegistryFullError(Exception):
+class AnoncredsRevocationRegistryFullError(AriesError):
     """ Revocation registry is full and creation of new registry is necessary
     """
 
 
-class AnoncredsInvalidUserRevocId(Exception):
+class AnoncredsInvalidUserRevocId(AriesError):
     """ Invalid User Revocaction ID """
 
 
-class AnoncredsMasterSecretDuplicateNameError(Exception):
+class AnoncredsMasterSecretDuplicateNameError(AriesError):
     """ Attempt to generate master secret with duplicated name """
 
 
-class AnoncredsProofRejected(Exception):
+class AnoncredsProofRejected(AriesError):
     pass
 
 
-class AnoncredsCredentialRevoked(Exception):
+class AnoncredsCredentialRevoked(AriesError):
     pass
 
 
-class AnoncredsCredDefAlreadyExistsError(Exception):
+class AnoncredsCredDefAlreadyExistsError(AriesError):
     """ Attempt to create credential definition with duplicated did schema
         pair
     """
 
 
 # Crypto errors
-class UnknownCryptoTypeError(Exception):
+class UnknownCryptoTypeError(AriesError):
     """ Unknown format of DID entity keys """
 
 
-class DidAlreadyExistsError(Exception):
+class DidAlreadyExistsError(AriesError):
     """ Attempt to create duplicate did """
 
 
-class PaymentUnknownMethodError(Exception):
+class PaymentUnknownMethodError(AriesError):
     """ Unknown payment method was given """
 
 
-class PaymentIncompatibleMethodsError(Exception):
+class PaymentIncompatibleMethodsError(AriesError):
     """ No methods were scraped from inputs/outputs or more than one was
         scraped
     """
 
 
-class PaymentInsufficientFundsError(Exception):
+class PaymentInsufficientFundsError(AriesError):
     """ Insufficient funds on inputs """
 
 
-class PaymentSourceDoesNotExistError(Exception):
+class PaymentSourceDoesNotExistError(AriesError):
     """ No such source on a ledger """
 
 
-class PaymentOperationNotSupportedError(Exception):
+class PaymentOperationNotSupportedError(AriesError):
     """ Operation is not supported for payment method """
 
 
-class PaymentExtraFundsError(Exception):
+class PaymentExtraFundsError(AriesError):
     """ Extra funds on inputs """
