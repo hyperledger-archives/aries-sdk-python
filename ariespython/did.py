@@ -1,130 +1,87 @@
-from typing import Dict, Optional, Any, Union
 import json
+from typing import Any, Dict, Union
 
-from indy import did, non_secrets, error
-from .error import errorcode_to_exception
+from indy import did
+
+from .error import IndyErrorHandler, WalletItemNotFound
 
 
-async def create_and_store_my_did(wallet_handle: int,
-                                  did_dict: Dict[str, Any] = {}) -> (str, str):
+@IndyErrorHandler()
+async def create_and_store_my_did(
+    wallet_handle: int, did_dict: Dict[str, Any] = {}
+) -> (str, str):
+    return await did.create_and_store_my_did(wallet_handle, json.dumps(did_dict))
+
+
+@IndyErrorHandler()
+async def create_key(wallet_handle: int, key_dict: Dict[str, Any]) -> str:
+    return await did.create_key(wallet_handle, json.dumps(key_dict))
+
+
+@IndyErrorHandler()
+async def store_their_did(wallet_handle: int, identity_dict: Dict[str, Any]) -> None:
+    await did.store_their_did(wallet_handle, json.dumps(identity_dict))
+
+
+@IndyErrorHandler()
+async def set_key_metadata(
+    wallet_handle: int, verkey: str, metadata: Union[Dict, str]
+) -> None:
+    if isinstance(metadata, dict):
+        metadata = json.dumps(metadata)
+    await did.set_key_metadata(wallet_handle, verkey, metadata)
+
+
+@IndyErrorHandler()
+async def get_key_metadata(wallet_handle: int, verkey: str) -> str:
+    metadata = await did.get_key_metadata(wallet_handle, verkey)
+
     try:
-        return await did.create_and_store_my_did(
-            wallet_handle,
-            json.dumps(did_dict)
-        )
-    except error.IndyError as err:
-        raise errorcode_to_exception(err.error_code) from err
+        metadata = json.loads(metadata)
+    except json.decoder.JSONDecodeError:
+        pass
+
+    return metadata
 
 
-async def create_key(wallet_handle: int,
-                     key_dict: Dict[str, Any]) -> str:
+@IndyErrorHandler()
+async def get_did_metadata(wallet_handle: int, did_subject: str) -> str:
+    metadata = await did.get_did_metadata(wallet_handle, did_subject)
+
     try:
-        return await did.create_key(
-            wallet_handle,
-            json.dumps(key_dict)
-        )
-    except error.IndyError as err:
-        raise errorcode_to_exception(err.error_code) from err
+        metadata = json.loads(metadata)
+    except json.decoder.JSONDecodeError:
+        pass
+
+    return metadata
 
 
-
-async def store_their_did(wallet_handle: int,
-                          identity_dict: Dict[str, Any]) -> None:
-    try:
-        await did.store_their_did(
-            wallet_handle,
-            json.dumps(identity_dict)
-        )
-    except error.IndyError as err:
-        raise errorcode_to_exception(err.error_code) from err
-
-
-async def set_key_metadata(wallet_handle: int,
-                           verkey: str,
-                           metadata: Union[Dict, str]) -> None:
+@IndyErrorHandler()
+async def set_did_metadata(
+    wallet_handle: int, did_subject: str, metadata: Union[Dict, str]
+) -> None:
     if isinstance(metadata, dict):
         metadata = json.dumps(metadata)
 
+    return await did.set_did_metadata(wallet_handle, did_subject, metadata)
+
+
+@IndyErrorHandler()
+async def key_for_local_did(wallet_handle: int, did: str) -> str:
+    return await did.key_for_local_did(wallet_handle, did)
+
+
+async def did_for_key(wallet_handle: int, verkey: str) -> str:
     try:
-        await did.set_key_metadata(wallet_handle, verkey, metadata)
-    except error.IndyError as err:
-        raise errorcode_to_exception(err.error_code) from err
+        with IndyErrorHandler():
+            key_meta = await get_key_metadata(wallet_handle, verkey)
+            if "did" not in key_meta:
+                return None
+            return key_meta["did"]
+    except WalletItemNotFound:
+        return None
 
 
-
-async def get_key_metadata(wallet_handle: int,
-                           verkey: str) -> str:
-    try:
-        metadata = await did.get_key_metadata(wallet_handle, verkey)
-
-        try:
-            metadata = json.loads(metadata)
-        except json.decoder.JSONDecodeError:
-            pass
-
-        return metadata
-    except error.IndyError as err:
-        raise errorcode_to_exception(err.error_code) from err
-
-
-async def get_did_metadata(wallet_handle: int,
-                           did_subject: str) -> str:
-    try:
-        metadata = await did.get_did_metadata(wallet_handle, did_subject)
-
-        try:
-            metadata = json.loads(metadata)
-        except json.decoder.JSONDecodeError:
-            pass
-
-        return metadata
-    except error.IndyError as err:
-        raise errorcode_to_exception(err.error_code) from err
-
-
-async def set_did_metadata(wallet_handle: int,
-                           did_subject: str,
-                           metadata: Union[Dict, str]) -> None:
-    if isinstance(metadata, dict):
-        metadata = json.dumps(metadata)
-
-    try:
-        await did.set_did_metadata(wallet_handle, did_subject, metadata)
-    except error.IndyError as err:
-        raise errorcode_to_exception(err.error_code) from err
-
-
-
-async def key_for_local_did(wallet_handle: int,
-                            did: str) -> str:
-    try:
-        return await did.key_for_local_did(wallet_handle, did)
-    except error.IndyError as err:
-        raise errorcode_to_exception(err.error_code) from err
-
-
-async def did_for_key(wallet_handle: int,
-                      verkey: str) -> str:
-    try:
-        key_meta = await get_key_metadata(wallet_handle, verkey)
-        if 'did' not in key_meta:
-            return None
-        return key_meta['did']
-    except error.IndyError as err:
-        if err.error_code == error.ErrorCode.WalletItemNotFound:
-            return None
-
-        raise errorcode_to_exception(err.error_code) from err
-
-
-async def map_key_to_did(wallet_handle: int,
-                         verkey: str,
-                         did:str):
-    try:
-        await set_key_metadata(
-            wallet_handle,
-            verkey,
-            {'did': did}
-        )
-    except error.IndyError as err:
-        raise errorcode_to_exception(err.error_code) from err
+@IndyErrorHandler()
+async def map_key_to_did(wallet_handle: int, verkey: str, did: str):
+    await set_key_metadata(wallet_handle, verkey, {"did": did})

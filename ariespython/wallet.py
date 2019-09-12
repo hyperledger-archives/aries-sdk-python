@@ -1,76 +1,42 @@
 from typing import Dict, Optional
 import json
 
-from indy import wallet, error
-from .error import errorcode_to_exception
+from indy import wallet
+from .error import IndyErrorHandler
 
 
-async def create_wallet(config: Dict,
-                        credentials: Dict) -> None:
-    try:
-        return await wallet.create_wallet(
-            json.dumps(config),
-            json.dumps(credentials)
-        )
-    except error.IndyError as err:
-        raise errorcode_to_exception(err.error_code) from err
+@IndyErrorHandler()
+async def create_wallet(config: Dict, credentials: Dict) -> None:
+    return await wallet.create_wallet(json.dumps(config), json.dumps(credentials))
 
 
-async def open_wallet(config: Dict,
-                      credentials: Dict) -> int:
-    try:
-        return await wallet.open_wallet(
-            json.dumps(config),
-            json.dumps(credentials)
-        )
-    except error.IndyError as err:
-        raise errorcode_to_exception(err.error_code) from err
+@IndyErrorHandler()
+async def open_wallet(config: Dict, credentials: Dict) -> int:
+    return await wallet.open_wallet(json.dumps(config), json.dumps(credentials))
 
 
+@IndyErrorHandler()
 async def close_wallet(handle: int) -> None:
-    try:
-        return await wallet.close_wallet(handle)
-    except error.IndyError as err:
-        raise errorcode_to_exception(err.error_code) from err
+    return await wallet.close_wallet(handle)
 
 
-async def delete_wallet(config: Dict,
-                        credentials: Dict) -> None:
-    try:
-        return await wallet.delete_wallet(
-            json.dumps(config),
-            json.dumps(credentials)
-        )
-    except error.IndyError as err:
-        raise errorcode_to_exception(err.error_code) from err
+@IndyErrorHandler()
+async def delete_wallet(config: Dict, credentials: Dict) -> None:
+    return await wallet.delete_wallet(json.dumps(config), json.dumps(credentials))
 
 
-async def export_wallet(handle: int,
-                        export_config: Dict) -> None:
-    try:
-        return await wallet.export_wallet(
-            handle,
-            json.dumps(export_config)
-        )
-    except error.IndyError as err:
-        raise errorcode_to_exception(err.error_code) from err
+@IndyErrorHandler()
+async def export_wallet(handle: int, export_config: Dict) -> None:
+    return await wallet.export_wallet(handle, json.dumps(export_config))
 
 
-async def import_wallet(config: Dict,
-                        credentials: Dict,
-                        import_config: Dict) -> None:
-    try:
-        return await wallet.import_wallet(
-            json.dumps(config),
-            json.dumps(credentials),
-            json.dumps(import_config)
-        )
-    except error.IndyError as err:
-        raise errorcode_to_exception(err.error_code) from err
+@IndyErrorHandler()
+async def import_wallet(config: Dict, credentials: Dict, import_config: Dict) -> None:
+    return await wallet.import_wallet(
+        json.dumps(config), json.dumps(credentials), json.dumps(import_config)
+    )
 
 
+@IndyErrorHandler()
 async def generate_wallet_key(config: Optional[Dict]) -> Dict:
-    try:
-        return json.loads(await wallet.generate_wallet_key(json.dumps(config)))
-    except error.IndyError as err:
-        raise errorcode_to_exception(err.error_code) from err
+    return json.loads(await wallet.generate_wallet_key(json.dumps(config)))
